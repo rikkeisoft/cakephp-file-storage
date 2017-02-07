@@ -367,14 +367,13 @@ abstract class AbstractListener implements EventListenerInterface {
 			$entity = $event->data('entity');
 			$path = $this->pathBuilder()->fullPath($entity);
 
-				$event->setResult(true);
-				$event->setData('path', $path);
-				$event->setData('entity', $entity);
-				$this->_afterDeleteFile($event);
+			$event->setResult(true);
+			$event->setData('path', $path);
+			$event->setData('entity', $entity);
+			$this->_afterDeleteFile($event);
 
-				return true;
-			}
-		} catch (\Exception $e) {
+			return true;
+		} catch (Exception $e) {
 			$this->log($e->getMessage(), LogLevel::ERROR, ['scope' => ['storage']]);
 			throw new StorageException($e->getMessage(), $e->getCode(), $e);
 		}

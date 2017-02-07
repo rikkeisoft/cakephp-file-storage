@@ -130,7 +130,6 @@ class LegacyImageProcessingListener extends AbstractListener {
 	 * @param \Cake\ORM\Table $table
 	 * @param array $entity
 	 * @param array $operations
-	 * @throws \Burzum\FileStorage\Event\Exception
 	 * @throws \Exception
 	 * @return false|null
 	 */
@@ -334,7 +333,6 @@ class LegacyImageProcessingListener extends AbstractListener {
 		$data = $Event->getData();
 		extract($data);
 
-		if (!isset($Event->data['image']['adapter'])) {
 		if (!isset($data['image']['adapter'])) {
 			throw new \RuntimeException(__d('file_storage', 'No adapter config key passed!'));
 		}

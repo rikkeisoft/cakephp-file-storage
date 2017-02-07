@@ -43,7 +43,7 @@ class UploadBehavior extends Behavior {
 	 * @return void
 	 */
 	public function afterSave(Event $event, EntityInterface $entity) {
-		if ($this->config('uploadOn') === 'afterSave') {
+		if ($this->getConfig('uploadOn') === 'afterSave') {
 			$this->_handleFiles($entity);
 		}
 	}
@@ -56,7 +56,7 @@ class UploadBehavior extends Behavior {
 	 * @return void
 	 */
 	public function beforeSave(Event $event, EntityInterface $entity) {
-		if ($this->config('uploadOn') === 'beforeSave') {
+		if ($this->getConfig('uploadOn') === 'beforeSave') {
 			$this->_handleFiles($entity);
 		}
 	}
@@ -68,7 +68,7 @@ class UploadBehavior extends Behavior {
 	 * @return array
 	 */
 	protected function _handleFiles(EntityInterface $entity) {
-		$files = $this->config('file');
+		$files = $this->getConfig('file');
 		if (is_string($files)) {
 			$files = [$files => $this->config('defaults')];
 		}
@@ -136,7 +136,7 @@ class UploadBehavior extends Behavior {
 	 * @param array $options
 	 */
 	public function saveFile($file, $options = []) {
-		$defaults = $this->config('defaults');
+		$defaults = $this->getConfig('defaults');
 		$defaults += $options;
 		$options = $defaults;
 

@@ -143,7 +143,7 @@ class BaseListener extends AbstractListener {
 			throw new InvalidArgumentException('No image entity provided.');
 		}
 
-		$this->_loadImageProcessingFromConfig();
+		$this->loadImageProcessingFromConfig();
 		$data['path'] = $this->imageVersionPath($entity, $version, $type, $options);
 
 		$event->setData($data);
@@ -187,7 +187,6 @@ class BaseListener extends AbstractListener {
 		$options = !empty($options) ? $options : [];
 
 		$this->loadImageProcessingFromConfig();
-			$event->getData('entity'),
 
 		$event->setResult($this->{$method}(
 			$event->getData('entity'),
