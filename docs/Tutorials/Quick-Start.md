@@ -3,7 +3,16 @@ Quick-Start Tutorial
 
 It is required that you have at least a basic understanding of how the event system of CakePHP work works. If you're unsure it is recommended to read about it first. It is expected that you take the time to try to actually *understand* what you're doing instead of just copy and pasting the code. Understanding OOP and namespaces in php is required for this tutorial.
 
+```js
+{
+	"require": {
+		"burzum/cakephp-file-storage": "^1.1",
+		"burzum/cakephp-imagine-plugin": "^2.1"
+	}
+}
+```
 This tutorial will assume that we're going to add an avatar image upload for our users.
+
 
 For image processing you'll need the Imagine plugin. If you don't have it already added, add it now:
 

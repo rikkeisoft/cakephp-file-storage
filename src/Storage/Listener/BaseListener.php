@@ -121,7 +121,9 @@ class BaseListener extends AbstractListener {
 	 * @return void
 	 */
 	public function imagePath(Event $event) {
-		$data = $event->data + [
+		$data = $event->getData();
+
+		$data = $data + [
 			'image' => null,
 			'version' => null,
 			'options' => [],
@@ -129,7 +131,7 @@ class BaseListener extends AbstractListener {
 		];
 
 		if ($event->subject() instanceof EntityInterface) {
-			$data['image'] = $event->subject();
+			$data['image'] = $event->getSubject();
 		}
 
 		$entity = $data['image'];
@@ -141,11 +143,11 @@ class BaseListener extends AbstractListener {
 			throw new InvalidArgumentException('No image entity provided.');
 		}
 
-		$this->loadImageProcessingFromConfig();
-		$path = $this->imageVersionPath($entity, $version, $type, $options);
+		$this->_loadImageProcessingFromConfig();
+		$data['path'] = $this->imageVersionPath($entity, $version, $type, $options);
 
-		$event->result = $path;
-		$event->setData('path', $path);
+		$event->setData($data);
+		$event->setResult($data['path']);
 		$event->stopPropagation();
 	}
 
@@ -176,19 +178,22 @@ class BaseListener extends AbstractListener {
 	 * @return void
 	 */
 	protected function _processImages(Event $event, $method) {
-		if ($this->config('imageProcessing') !== true) {
+		if ($this->getConfig('imageProcessing') !== true) {
 			return;
 		}
 
+		$options = $event->getData('options');
 		$versions = $this->_getVersionData($event);
-		$options = isset($event->data['options']) ? $event->data['options'] : [];
+		$options = !empty($options) ? $options : [];
 
 		$this->loadImageProcessingFromConfig();
-		$event->result = $this->{$method}(
-			$event->data['entity'],
+			$event->getData('entity'),
+
+		$event->setResult($this->{$method}(
+			$event->getData('entity'),
 			$versions,
 			$options
-		);
+		));
 	}
 
 	/**
@@ -202,10 +207,12 @@ class BaseListener extends AbstractListener {
 	 * @return array
 	 */
 	protected function _getVersionData($event) {
-		if (isset($event->data['versions'])) {
-			$versions = $event->data['versions'];
-		} elseif (isset($event->data['operations'])) {
-			$versions = array_keys($event->data['operations']);
+		$data = $event->data['versions'];
+
+		if (isset($data['versions'])) {
+			$versions = $data['versions'];
+		} elseif (isset($data['operations'])) {
+			$versions = array_keys($data['operations']);
 		} else {
 			$versions = [];
 		}

@@ -43,7 +43,7 @@ class LegacyLocalFileStorageListenerTest extends TestCase {
 			])
 			->getMock();
 
-		$this->adapterMock = $this->getMockBuilder(Local::class)
+		$this->adapterMock = $this->getMockBuilder('\Gaufrette\Adapter\Local')
 			->disableOriginalConstructor()
 			->getMock();
 
