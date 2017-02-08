@@ -18,7 +18,7 @@ use Cake\ORM\Table;
  * Behavior that is attached to this table.
  *
  * @author Florian Krämer
- * @copyright 2012 - 2016 Florian Krämer
+ * @copyright 2012 - 2017 Florian Krämer
  * @license MIT
  */
 class FileStorageTable extends Table {

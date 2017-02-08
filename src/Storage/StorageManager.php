@@ -9,7 +9,7 @@ use RuntimeException;
  * StorageManager - manages and instantiates Gaufrette storage engine instances
  *
  * @author Florian Krämer
- * @copyright 2012 - 2016 Florian Krämer
+ * @copyright 2012 - 2017 Florian Krämer
  * @license MIT
  */
 class StorageManager {
@@ -28,15 +28,23 @@ class StorageManager {
 	];
 
 	/**
+	 * Adapter objects
+	 *
+	 * @var array
+	 */
+	protected $_adapterInstances = [];
+
+	/**
 	 * Return a singleton instance of the StorageManager.
 	 *
 	 * @return \Burzum\FileStorage\Storage\StorageManager
 	 */
 	public static function &getInstance() {
-		static $instance = [];
+		static $instance = array();
 		if (!$instance) {
-			$instance[0] = new self();
+			$instance[0] = new StorageManager();
 		}
+
 		return $instance[0];
 	}
 
@@ -45,34 +53,64 @@ class StorageManager {
 	 *
 	 * @param string $adapter
 	 * @param array $options
-	 * @throws \InvalidArgumentException
 	 * @return mixed
+	 * @deprecated Use StorageManager::getConfig() and setConfig()
 	 */
 	public static function config($adapter, $options = []) {
 		$_this = static::getInstance();
-
 		if (!empty($adapter) && !empty($options)) {
-			return $_this->_adapterConfig[$adapter] = $options;
+			self::setConfig($adapter, $options);
+			$options;
 		}
 
-		if (isset($_this->_adapterConfig[$adapter])) {
-			return $_this->_adapterConfig[$adapter];
+		try {
+			return self::getConfig($adapter);
+		} catch (RuntimeException $e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Sets an adapter config
+	 *
+	 * @param string $configName Config name
+	 * @param array $configOptions Options
+	 * @return null
+	 */
+	public static function setConfig($configName, array $configOptions) {
+		$_this = StorageManager::getInstance();
+		$_this->_adapterConfig[$configName] = $configOptions;
+		unset($_this->_adapterInstances[$configName]);
+	}
+
+	/**
+	 * Get an adapter config
+	 *
+	 * @param string $name Configuration name
+	 * @return array
+	 */
+	public static function getConfig($name) {
+		$_this = StorageManager::getInstance();
+
+		if (!isset($_this->_adapterConfig[$name])) {
+			throw new RuntimeException(sprintf('Storage adapter config `%s` does not exist', $name));
 		}
 
-		return false;
+		return $_this->_adapterConfig[$name];
 	}
 
 	/**
 	 * Flush all or a single adapter from the config.
 	 *
-	 * @param string|null $name Config name, if none all adapters are flushed.
+	 * @param string $name Config name, if none all adapters are flushed.
 	 * @return bool True on success.
 	 */
 	public static function flush($name = null) {
-		$_this = static::getInstance();
+		$_this = StorageManager::getInstance();
 
 		if (isset($_this->_adapterConfig[$name])) {
 			unset($_this->_adapterConfig[$name]);
+			unset($_this->_adapterInstances[$name]);
 			return true;
 		}
 
@@ -82,48 +120,67 @@ class StorageManager {
 	/**
 	 * Gets a configured instance of a storage adapter.
 	 *
-	 * @param mixed $configName string of adapter configuration or array of settings
-	 * @param bool|bool $renewObject Creates a new instance of the given adapter in the configuration
+	 * @param mixed $adapterName string of adapter configuration or array of settings
+	 * @param boolean $renewObject Creates a new instance of the given adapter in the configuration
 	 * @throws \RuntimeException
-	 * @throws \InvalidArgumentException
+	 * @return \Gaufrette\Filesystem
+	 * @deprecated Use StorageManager::getAdapter() instead
+	 */
+	public static function adapter($adapterName, $renewObject = false) {
+		return self::getAdapter($adapterName, $renewObject);
+	}
+
+	/**
+	 * Gets a configured instance of a storage adapter.
+	 *
+	 * @param mixed $name string of adapter configuration or array of settings
+	 * @param boolean $renewObject Creates a new instance of the given adapter in the configuration
+	 * @throws \RuntimeException
 	 * @return \Gaufrette\Filesystem
 	 */
-	public static function get($configName, $renewObject = false) {
-		if (empty($configName) || !is_string($configName)) {
-			throw new InvalidArgumentException('StorageManager::get() first arg must be a non empty string!');
-		}
+	public static function getAdapter($name, $renewObject = false) {
+		$_this = StorageManager::getInstance();
 
-		$_this = static::getInstance();
+		if (is_string($name)) {
+			if (!empty($_this->_adapterInstances[$name]) && $renewObject === false) {
+				return $_this->_adapterInstances[$name];
+			}
 
-		$isConfigured = true;
-		if (is_string($configName)) {
-			if (!empty($_this->_adapterConfig[$configName])) {
-				$adapter = $_this->_adapterConfig[$configName];
+			if (!empty($_this->_adapterConfig[$name])) {
+				$adapter = $_this->_adapterConfig[$name];
 			} else {
-				throw new RuntimeException(sprintf('Invalid Storage Adapter %s!', $configName));
-			}
-
-			if (!empty($_this->_adapterConfig[$configName]['object']) && $renewObject === false) {
-				return $_this->_adapterConfig[$configName]['object'];
+				throw new RuntimeException(sprintf('Invalid Storage Adapter %s!', $name));
 			}
 		}
 
-		if (is_array($configName)) {
-			$adapter = $configName;
-			$isConfigured = false;
+		if (is_array($name)) {
+			$adapter = $name;
 		}
 
 		$class = $adapter['adapterClass'];
 		$Reflection = new ReflectionClass($class);
 		if (!is_array($adapter['adapterOptions'])) {
-			throw new InvalidArgumentException(sprintf('%s: The adapter options must be an array!', $configName));
+			throw new InvalidArgumentException(sprintf('%s: The adapter options must be an array!', $name));
 		}
+
 		$adapterObject = $Reflection->newInstanceArgs($adapter['adapterOptions']);
 		$engineObject = new $adapter['class']($adapterObject);
-		if ($isConfigured) {
-			$_this->_adapterConfig[$configName]['object'] = &$engineObject;
-		}
+		$_this->_adapterInstances[$name] = &$engineObject;
+
 		return $engineObject;
 	}
 
+	/**
+	 * Returns an array that can be used to describe the internal state of this
+	 * object.
+	 *
+	 * @return array
+	 */
+	public function __debugInfo() {
+		$_this = StorageManager::getInstance();
+		return [
+			'_adapterConfig' => $_this->_adapterConfig,
+			'_adapterInstances' => $_this->_adapterInstances,
+		];
+	}
 }
