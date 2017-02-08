@@ -25,7 +25,7 @@ trait StorageTrait {
 	}
 
 	/**
-	 * Wrapper around the singleton call to StorageManager::get()
+	 * Wrapper around the singleton call to StorageManager::getAdapter()
 	 *
 	 * Makes it easy to mock the adapter in tests.
 	 *
@@ -34,7 +34,7 @@ trait StorageTrait {
 	 * @return array
 	 */
 	public function getStorageAdapter($configName, $renewObject = false) {
-		return StorageManager::get($configName, $renewObject);
+		return StorageManager::getAdapter($configName, $renewObject);
 	}
 
 	/**

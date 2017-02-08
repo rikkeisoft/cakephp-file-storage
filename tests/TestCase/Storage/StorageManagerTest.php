@@ -19,17 +19,17 @@ class StorageManagerTest extends FileStorageTestCase {
 	 * @return void
 	 */
 	public function testAdapter() {
-		$result = StorageManager::get('Local');
+		$result = StorageManager::getAdapter('Local');
 		$this->assertEquals(get_class($result), 'Gaufrette\Filesystem');
 
 		try {
-			StorageManager::get('Does Not Exist');
+			StorageManager::getAdapter('Does Not Exist');
 			$this->fail('Exception not thrown!');
 		} catch (\RuntimeException $e) {
 		}
 
 		try {
-			StorageManager::get('');
+			StorageManager::getAdapter('');
 			$this->fail('Exception not thrown!');
 		} catch (\InvalidArgumentException $e) {
 		}
