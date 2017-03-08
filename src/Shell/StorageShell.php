@@ -20,13 +20,9 @@ class StorageShell extends Shell {
 	 * @var array
 	 */
 	public $tasks = [
-		'Burzum/FileStorage.Image'
+		'Burzum/FileStorage.Image',
+		'Burzum/FileStorage.Integrity'
 	];
-
-	/**
-	 * @inheritdoc
-	 */
-	public function main() {}
 
 	/**
 	 * @inheritdoc
@@ -51,6 +47,10 @@ class StorageShell extends Shell {
 		$parser->addSubcommand('image', [
 			'help' => __('Image Processing Task.'),
 			'parser' => $this->Image->getOptionParser()
+		]);
+		$parser->addSubcommand('integrity', [
+			'help' => __('Integrity Task.'),
+			'parser' => $this->Integrity->getOptionParser()
 		]);
 		$parser->addSubcommand('store', [
 			'help' => __('Stores a file in the DB.'),
