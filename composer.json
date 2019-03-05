@@ -14,7 +14,8 @@
 	"minimum-stability": "dev",
 	"require": {
 		"php": ">=5.3.2",
-		"knplabs/gaufrette": "*"
+		"knplabs/gaufrette": "*",
+		"composer/installers": "~1.0"
 	},
 	"suggest": {
 		"burzum/cakephp-imagine-plugin": "Required if you want to use the image processing feature of FileStorage",
